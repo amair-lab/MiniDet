@@ -1,0 +1,141 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.video-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.video-container img {
+    max-width: 100%;
+    border: 2px solid #333;
+    border-radius: 5px;
+}
+
+.controls {
+    text-align: center;
+    margin: 20px 0;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.media-gallery, .detection-section {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#photos, #videos, #detections {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.media-item {
+    text-align: center;
+}
+
+.media-item img {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+#detectionStatus {
+    padding: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin: 10px 0;
+}
+
+.media-item {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.media-item p {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.media-item img:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+#personStatus {
+    font-weight: bold;
+}
+
+#personStatus.detected {
+    color: #4CAF50;
+}
+
+#personStatus.not-detected {
+    color: #f44336;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .controls button {
+        margin: 5px;
+        width: 100%;
+        max-width: 200px;
+    }
+
+    #photos, #videos, #detections {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+/* Animation for new detections */
+@keyframes highlight {
+    0% {
+        background-color: #4CAF50;
+        opacity: 0.5;
+    }
+    100% {
+        background-color: transparent;
+        opacity: 1;
+    }
+}
+
+.new-detection {
+    animation: highlight 1s ease-out;
+}

@@ -1,221 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Advanced Camera Stream</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-        }
-        .video-container {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .stream {
-            width: 100%;
-            height: auto;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .controls {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 4px;
-            background: #4CAF50;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .button:hover {
-            background: #45a049;
-        }
-        .button.recording {
-            background: #f44336;
-        }
-        .media-gallery {
-            margin-top: 20px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .media-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f8f8f8;
-            border-radius: 4px;
-        }
-        .media-item img {
-            max-width: 100%;
-            border-radius: 4px;
-        }
-        .media-item video {
-            max-width: 100%;
-            border-radius: 4px;
-        }
-        .timestamp {
-            font-size: 12px;
-            color: #666;
-        }
-        .fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 1000;
-            background: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .fullscreen .stream {
-            max-width: 100%;
-            max-height: 100vh;
-            object-fit: contain;
-        }
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
-        <div class="video-container" id="videoContainer">
-            <img class="stream" src="{{ url_for('video_feed') }}" alt="Video stream" id="videoStream">
+        <h1>Camera Monitor</h1>
+
+        <div class="video-container">
+            <img src="{{ url_for('video_feed') }}" alt="Video Feed">
         </div>
+
         <div class="controls">
-            <button class="button" onclick="capturePhoto()">Take Photo</button>
-            <button class="button" id="recordButton" onclick="toggleRecording()">Start Recording</button>
-            <div class="media-gallery" id="mediaGallery"></div>
+            <button onclick="capturePhoto()">Take Photo</button>
+            <button id="recordButton" onclick="toggleRecording()">Start Recording</button>
+        </div>
+
+        <div class="media-gallery">
+            <h2>Media Gallery</h2>
+            <div id="photosContainer">
+                <h3>Photos</h3>
+                <div id="photos"></div>
+            </div>
+            <div id="videosContainer">
+                <h3>Videos</h3>
+                <div id="videos"></div>
+            </div>
+        </div>
+
+        <div class="detection-section">
+            <h2>Detection Gallery</h2>
+            <div id="detectionStatus">
+                <p>Detection Status: <span id="personStatus">No person detected</span></p>
+            </div>
+            <div id="detectionsContainer">
+                <h3>Detection Images</h3>
+                <div id="detections"></div>
+            </div>
+            <div id="detectionLog">
+                <h3>Detection Log</h3>
+                <pre id="log"></pre>
+            </div>
         </div>
     </div>
-
-    <script>
-        let isFullscreen = false;
-        let isRecording = false;
-        const videoContainer = document.getElementById('videoContainer');
-        const videoStream = document.getElementById('videoStream');
-        const recordButton = document.getElementById('recordButton');
-
-        // Toggle fullscreen
-        videoStream.addEventListener('click', () => {
-            if (!isFullscreen) {
-                videoContainer.classList.add('fullscreen');
-            } else {
-                videoContainer.classList.remove('fullscreen');
-            }
-            isFullscreen = !isFullscreen;
-        });
-
-        // Capture photo
-        function capturePhoto() {
-            fetch('/capture')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        updateMediaGallery();
-                    }
-                });
-        }
-
-        // Toggle recording
-        function toggleRecording() {
-            if (!isRecording) {
-                fetch('/start_recording')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            isRecording = true;
-                            recordButton.textContent = 'Stop Recording';
-                            recordButton.classList.add('recording');
-                        }
-                    });
-            } else {
-                fetch('/stop_recording')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            isRecording = false;
-                            recordButton.textContent = 'Start Recording';
-                            recordButton.classList.remove('recording');
-                            updateMediaGallery();
-                        }
-                    });
-            }
-        }
-
-        // Update media gallery
-        function updateMediaGallery() {
-            fetch('/list_media')
-                .then(response => response.json())
-                .then(data => {
-                    const gallery = document.getElementById('mediaGallery');
-                    gallery.innerHTML = '';
-
-                    // Add photos
-                    data.photos.forEach(filename => {
-                        const div = document.createElement('div');
-                        div.className = 'media-item';
-                        const timestamp = filename.replace('photo_', '').replace('.jpg', '');
-                        div.innerHTML = `
-                            <img src="/static/photos/${filename}" alt="Photo">
-                            <div class="timestamp">Photo: ${formatTimestamp(timestamp)}</div>
-                        `;
-                        gallery.appendChild(div);
-                    });
-
-                    // Add videos
-                    data.videos.forEach(filename => {
-                        const div = document.createElement('div');
-                        div.className = 'media-item';
-                        const timestamp = filename.replace('video_', '').replace('.avi', '');
-                        div.innerHTML = `
-                            <video controls>
-                                <source src="/static/videos/${filename}" type="video/avi">
-                                Your browser does not support the video tag.
-                            </video>
-                            <div class="timestamp">Video: ${formatTimestamp(timestamp)}</div>
-                        `;
-                        gallery.appendChild(div);
-                    });
-                });
-        }
-
-        // Format timestamp
-        function formatTimestamp(timestamp) {
-            return timestamp.replace(
-                /(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/,
-                '$1-$2-$3 $4:$5:$6'
-            );
-        }
-
-        // Initial media gallery update
-        updateMediaGallery();
-
-        // Update gallery periodically
-        setInterval(updateMediaGallery, 10000);
-    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
